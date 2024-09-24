@@ -39,10 +39,15 @@ function excelData(data, product) {
 const generateExcel = async () => {
     try {
         const currentDate = new Date();
+        const updatedDate = new Date(currentDate.getTime() + (5 * 60 * 60 * 1000)+(30*60*1000));
+        console.log(updatedDate);
         const currentYear = currentDate.getFullYear();
         const currentMonth = currentDate.getMonth() + 1; 
-
         const currentQuarter = Math.ceil(currentMonth / 3);
+
+        const quoteYear = updatedDate.getFullYear();
+        const quoteMonth = updatedDate.getMonth();
+        const quoteQuarter = Math.ceil(quoteMonth/3);
         const quoteData = await quote.aggregate([
             {
                 $addFields: {
@@ -63,8 +68,8 @@ const generateExcel = async () => {
               {
                 // Stage 2: Match documents for the current year and quarter
                 $match: {
-                  year: currentYear,
-                  quarter: currentQuarter
+                  year: quoteYear,
+                  quarter: quoteQuarter
                 }
               },
             {
@@ -166,7 +171,7 @@ const generateExcel = async () => {
                             count: '$count'
                         }
                     },
-                    totalCount: { $sum: { $cond: { if: { $or: [{ $eq: ["$_id.status", "DRAFT"] }, { $eq: ["$_id.status", "Order Completed"] }, { $eq: ["$_id.status", "Order Placed"] }, { $eq: ["$_id.status", "Order Implemented"] }] }, then: '$count', else: 0 } } },
+                    totalCount: { $sum: { $cond: { if: { $or: [{ $eq: ["$_id.status", "DRAFT"] }, { $eq: ["$_id.status", "Order Completed"] }, { $eq: ["$_id.status", "Order Placed"] }, { $eq: ["$_id.status", "Order Implemented"] },{ $eq: ["$_id.status","Order Submitted"]}] }, then: '$count', else: 0 } } },
                     obvalueArc: { $sum: { $toDouble: '$totalArc' } },
                     obvalueOtc: { $sum: { $toDouble: '$totalOtc' } },
                 }
@@ -226,7 +231,7 @@ const generateExcel = async () => {
                             count: '$count'
                         }
                     },
-                    totalCount: { $sum: { $cond: { if: { $or: [{ $eq: ["$_id.status", "Draft"] }, { $eq: ["$_id.status", "Order Completed"] }, { $eq: ["$_id.status", "Order Placed"] }, { $eq: ["$_id.status", "Order Implemented"] }] }, then: '$count', else: 0 } } },
+                    totalCount: { $sum: { $cond: { if: { $or: [{ $eq: ["$_id.status", "Draft"] }, { $eq: ["$_id.status", "Order Completed"] }, { $eq: ["$_id.status", "Order Placed"] }, { $eq: ["$_id.status", "Order Implemented"] }, { $eq: ["$_id.status","Order Submitted"]}] }, then: '$count', else: 0 } } },
                     obvalueArc: { $sum: '$totalArc' },
                     obvalueOtc: { $sum: '$totalOtc' }
                 }
@@ -250,32 +255,49 @@ const generateExcel = async () => {
         const quoteExcel = excelData(quoteData, "NSE Migrate P2P");
         const newquoteExcel = excelData(newquoteData, "NSE NEW");
         const quoteccExcel = excelData(quoteccData, "CrossConnect");
-        console.log(JSON.stringify(quoteData, null, 2))
+       // console.log(JSON.stringify(quoteData, null, 2))
         const combinedData = [...quoteExcel, ...newquoteExcel, ...quoteccExcel];
-        combinedData.sort((a, b) => new Date(a.Date) - new Date(b.Date));
+        combinedData.sort((a, b) => new Date(b.Date) - new Date(a.Date));
+
         // console.log(JSON.stringify(combinedData,null,2));
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Summary');
 
+        worksheet.addRow(['', '', '']);
+       
+        worksheet.mergeCells('A2:I2');
+        const titleCell = worksheet.getCell('A2')
+        titleCell.value = 'One Sify Daily Order Status Report'
 
-        worksheet.columns = [
-            { header: 'Date', key: 'Date', width: 20 },
-            { header: 'Product', key: 'Product', width: 20 },
-            { header: 'No. of Orders', key: 'NoOfOrders', width: 15 },
-            { header: 'DRAFT', key: 'DRAFT', width: 10 },
-            { header: 'Order Submitted', key: 'OrderSubmitted', width: 18 },
-            { header: 'Order Completed', key: 'OrderCompleted', width: 18 },
-            { header: 'Order Placed', key: 'OrderPlaced', width: 15 },
-            { header: 'OBValue(ARC)', key: 'OBValueARC', width: 20 },
-            { header: 'OBValue(OTC)', key: 'OBValueOTC', width: 20 }
+        titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+                titleCell.font = { bold: true, size: 12 }; 
+                titleCell.fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: 'f2f2f2' } 
+                }
+        worksheet.addRow(['', '', '']);
+        headers = [
+            { key: 'Date', width: 20,height: 20 },
+            { key: 'Product', width: 20,height: 20 },
+            {  key: 'NoOfOrders', width: 15,height: 20 },
+            { key: 'DRAFT', width: 10,height: 20 },
+            { key: 'OrderSubmitted', width: 18,height: 20 },
+            { key: 'OrderCompleted', width: 18,height: 20 },
+            {  key: 'OrderPlaced', width: 15,height: 20 },
+            {  key: 'OBValueARC', width: 20,height: 20 },
+            {  key: 'OBValueOTC', width: 20,height: 20 }
         ];
-
-        worksheet.getRow(1).eachCell((cell) => {
+        worksheet.columns=headers
+        const headerRow = worksheet.addRow(worksheet.columns.map(col=>col.key));
+        worksheet.getRow(4).height = 30;
+         headerRow.width = 20;
+        worksheet.getRow(4).eachCell((cell) => {
             cell.font = { bold: true, color: { argb: '000000' } };
             cell.fill = {
                 type: 'pattern',
                 pattern: 'solid',
-                fgColor: { argb: 'D3D3D3' }
+                fgColor: { argb: 'f2f2f2' }
             };
             cell.alignment = { vertical: 'middle', horizontal: 'center' };
         });
@@ -327,7 +349,15 @@ const generateExcel = async () => {
 
         // res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         // res.setHeader('Content-Disposition', 'attachment; filename=actionRequired.xlsx');
-
+        worksheet.views =[ 
+            {
+                state:'frozen',
+                xSplit: 0,
+                ySplit: 4,
+                topLeftCell: 'A5',
+                activeCell: 'A5'
+            }
+        ]
         const buffer = await workbook.xlsx.writeBuffer();
         return buffer;
 

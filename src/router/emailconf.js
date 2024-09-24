@@ -13,9 +13,15 @@ const sendEmailWithAttachment = async (excelBuffer) => {
   
     const mailOptions = {
       from: 'onesify@sifycorp.com', 
-      to: ['kiran.sudharsan@sifycorp.com','vaishnavi.srinivasan@sifycorp.com','yuvaraj.subramanian@sifycorp.com'],  
-      subject: 'Report - Order Summary',  
-      text: 'Please find the attached Excel report.',  
+      to: ['kiran.sudharsan@sifycorp.com','vaishnavi.srinivasan@sifycorp.com'],  
+      subject: 'Report - Order Summary',   
+      html:`
+      <p>Please find the attached Excel report.</p>
+      <p>Best regards,</p><p>Team OneSify</p>
+    <div style="margin-top: 20px;">
+    <p><strong>Headquarters</strong></br>II floor, Tidel Park,</br>
+    No.4, Rajiv Gandhi Salai, Taramani,</br>
+    Chennai - 600 113, India </p>`,  
       attachments: [
         {
           filename: 'report.xlsx',  
