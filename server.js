@@ -7,8 +7,6 @@ const generateAndSendExcel = require('./src/router/emailconf');
 const cron = require('node-cron');
 const https = require("https");
 
-
-
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
