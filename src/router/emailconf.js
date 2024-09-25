@@ -41,9 +41,7 @@ const sendEmailWithAttachment = async (excelBuffer) => {
 
   const generateAndSendExcel = async () => {
     try {
-   
       const excelBuffer = await generateExcel();
-
       await sendEmailWithAttachment(excelBuffer);
     } catch (error) {
       console.error('Error generating or sending Excel file:', error);

@@ -1,21 +1,28 @@
 const express = require('express');
 require('./src/db');
+require('dotenv').config();
 const bodyParser = require('body-parser')
 const cors = require('cors');
 const generateAndSendExcel = require('./src/router/emailconf');
 const cron = require('node-cron');
+const https = require("https");
 
-const PORT =5000;
+
 
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-cron.schedule('46 10 * * *', (res) => {
+cron.schedule('* 11 * * *', () => {
     console.log('Running scheduled task to send Excel report...');
-    generateAndSendExcel();  
+    generateAndSendExcel();
   });
 
-app.listen(PORT,()=>{
-    console.log(`Server Started at port ${PORT}`)
+// HTTPS
+var port = process.env.PORTWSSL;
+var server = https.createServer(options, app);
+server.listen(port, function () {
+  console.log(
+    `REPORTS API is running on port: ${process.env.PORTWSSL} at ${appDate}`
+  );
 });
