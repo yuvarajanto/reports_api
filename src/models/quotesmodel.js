@@ -1,0 +1,80 @@
+const mongoose = require('mongoose');
+const {nseDB} = require('../db');
+
+const quoteSchema= new mongoose.Schema({
+    reqId:{
+        type:Number,
+        required:true
+    },
+    customerName:{
+        type:String,
+        required:true
+    },
+    ebsAccountNo:{
+        type:String,
+        required:true
+    },
+    linkId:{
+        type:String,
+    },
+    newConnectionA:{
+        type:Object
+    },
+    contactPersonDetails:{
+        type:String
+    },
+    pageTracker:{
+        type:String
+    },
+    pointALinkId:{
+        type:String
+    },
+    pointBLinkId:{
+        type:String
+    },
+    ordeRefNo:{
+        type:String
+    },
+    bookingNo:{
+        type:String
+    },
+    isActive:{
+        type:Boolean,
+        required:true
+    },
+    isPo:{
+        type:Boolean,
+    },
+    isCaf:{
+        type:Boolean,
+    },
+    status:{
+        type:String,
+        required:true
+    },
+    createdDate:{
+        type:Date,
+        default:Date.now
+    },
+    newConnectionB:{
+        type:Object
+    },
+    bandwidthDetails:{ 
+        type:Object
+    },
+    billingAddressA:{ 
+        type:Object
+    },
+    billingAddressB:{
+        type:Object
+    },
+    poDetails:{ 
+        type:Object
+    },
+    technicalDetails:{ 
+        type:Object
+    }
+})
+
+const quote = nseDB.model('quote', quoteSchema);
+module.exports = quote;
