@@ -1,12 +1,15 @@
 const mongoose = require('mongoose');
 
-const nseDB = mongoose.createConnection(
-    'mongodb://127.0.0.1:27017/onesify_nse',
-    {
-        useNewUrlParser:true,
-        useUnifiedTopology:true
-    }
-);
+const nseDB =mongoose.connect('mongodb://223.30.223.188:27017/onesify_nse', {
+    auth: {
+        username:'appusr',
+        password:'AppPass123'
+      },
+    authSource:"admin",
+    useUnifiedTopology: true,
+    useNewUrlParser: true
+  });
+   
 
 
 nseDB.on("error",()=>{
@@ -17,20 +20,23 @@ nseDB.once("open",() => {
     console.info("NSE_DB Connected");
 });
 
-networkDB = mongoose.createConnection(
-   'mongodb://127.0.0.1:27017/network_demo',
-    {
-        useNewUrlParser:true,
-        useUnifiedTopology:true
-    }
-);
+networkDB = mongoose.connect('mongodb://223.30.223.188:27017/network', {
+    auth: {
+        username:'appusr',
+        password:'AppPass123'
+      },
+    authSource:"admin",
+    useUnifiedTopology: true,
+    useNewUrlParser: true
+  });
+   
 
 networkDB.on("error",()=>{
     console.error.bind(console," NETWORK_DB Connection Error");
 });
 
 networkDB.once("open",() => {
-    console.info("NETWORJ_DB Connected");
+    console.info("NETWORK_DB Connected");
 });
 
 module.exports = { nseDB, networkDB};

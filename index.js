@@ -11,10 +11,12 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-cron.schedule('48 20 * * *', (res) => {
+cron.schedule('10 1 * * *', (res) => {
     console.log('Running scheduled task to send Excel report...');
     generateAndSendExcel();  
   });
+
+  generateAndSendExcel()
 
 app.listen(PORT,()=>{
     console.log(`Server Started at port ${PORT}`)
