@@ -26,8 +26,8 @@ function excelData(data, product) {
             "No. of Orders": item.totalCount,
             "DRAFT": counts["DRAFT"] || counts["Draft"],
             "Order Submitted": counts["Order Submitted"],
-            "Order Completed": counts["Order Completed"],
             "Order Placed": counts["Order Placed"],
+            "Order Completed": counts["Order Completed"],
             "Order Implemented": counts["Order Implemented"],
             "OBValue(ARC)": [ (item.obvalueArc || item.obvalueArcINR ) , item.obvalueArcUSD ],
             "OBValue(OTC)": [(item.obvalueOtc || item.obvalueArcINR ), item.obvalueOtcUSD]
@@ -51,6 +51,18 @@ const generateExcel = async () => {
         const quoteQuarter = Math.ceil(quoteMonth / 3);
        
         const quoteData = await quote.aggregate([
+            {
+
+                $addFields: {
+                    createdDate: {
+                        $cond: {
+                            if: { $eq: [{ $type: "$createdDate" }, "string"] },
+                            then: { $dateFromString: { dateString: "$createdDate" } },
+                            else: "$createdDate"
+                        }
+                    }
+                }
+            },
             {
                 $addFields: {
                     year: { $year: "$createdDate" },
@@ -77,11 +89,11 @@ const generateExcel = async () => {
             {
                 $group: {
                     _id: {
-                        createdDate: { $dateToString: { format: "%d %B %Y", date: "$createdDate" } },
+                        createdDate: { $dateToString: { format: "%d-%m-%Y", date: "$createdDate" } },
                         status: '$status'
                     },
                     count: { $sum: 1 },
-                    totalArc: { $sum: { $cond: { if: { $or: [{ $eq: ["$status", "Order Completed"] }, { $eq: ["$status", "Order Implemented"] }, { $eq: ["$status", "Order placed"] }] }, then: "$poDetails.arc", else: 0 } } },
+                    totalArc: { $sum: { $cond: { if: { $or: [{ $eq: ["$status", "Order Completed"] }, { $eq: ["$status", "Order Implemented"] }, { $eq: ["$status", "Order Placed"] }] }, then: "$poDetails.arc", else: 0 } } },
                     totalOtc: { $sum: { $cond: { if: { $or: [{ $eq: ["$status", "Order Completed"] }, { $eq: ["$status", "Order Implemented"] }] }, then: "$poDetails.otc", else: 0 } } }
                 }
             },
@@ -155,7 +167,7 @@ const generateExcel = async () => {
                     $group: {
                         _id: {
                             date: {
-                                $dateToString: { format: "%d %B %Y", date: "$createdDate" }
+                                $dateToString: { format: "%d-%m-%Y", date: "$createdDate" }
                             },
                             status: "$status"
                         },
@@ -286,6 +298,18 @@ const generateExcel = async () => {
         );
         const quoteccData = await quotecc.aggregate([
             {
+
+                $addFields: {
+                    createdDate: {
+                        $cond: {
+                            if: { $eq: [{ $type: "$createdDate" }, "string"] },
+                            then: { $dateFromString: { dateString: "$createdDate" } },
+                            else: "$createdDate"
+                        }
+                    }
+                }
+            },
+            {
                 $addFields: {
                     year: { $year: "$createdDate" },
                     quarter: {
@@ -310,7 +334,7 @@ const generateExcel = async () => {
             {
                 $group: {
                     _id: {
-                        createdDate: { $dateToString: { format: "%d %B %Y", date: "$createdDate" } },
+                        createdDate: { $dateToString: { format: "%d-%m-%Y", date: "$createdDate" } },
                         status: '$status',
                     },
                     count: { $sum: 1 },
@@ -359,8 +383,15 @@ const generateExcel = async () => {
         const quoteccExcel = excelData(quoteccData, "CrossConnect");
         //console.log(JSON.stringify(quoteccData, null, 2));
         const combinedData = [...quoteExcel, ...newquoteExcel, ...quoteccExcel];
-        combinedData.sort((a, b) => new Date(b.Date) - new Date(a.Date));
-
+        //combinedData.sort((a, b) => new Date(b.Date) - new Date(a.Date));
+        combinedData.sort((a, b) => {
+            const [dayA, monthA, yearA] = a.Date.split('-');
+            const [dayB, monthB, yearB] = b.Date.split('-');
+            const dateA = new Date(yearA, monthA - 1, dayA);
+            const dateB = new Date(yearB, monthB - 1, dayB);
+          
+            return dateB - dateA;
+          });
         let startDate;
         switch(quoteQuarter){
             case 1:
@@ -376,7 +407,7 @@ const generateExcel = async () => {
                 startDate = "01"+" Oct "+currentYear
                 break
         }
-        // console.log(JSON.stringify(combinedData,null,2));
+        //console.log(JSON.stringify(combinedData,null,2));
          const prevDay= new Date(currentDate);
          prevDay.setDate(currentDate.getDate()-1);
          currdate =  (prevDay.toDateString().split(' '))[2]+" "+(prevDay.toDateString().split(' '))[1] +" "+(prevDay.toDateString().split(' '))[3]
@@ -385,9 +416,9 @@ const generateExcel = async () => {
 
         worksheet.addRow(['', '', '']);
 
-        worksheet.mergeCells('A2:J2');
-        const titleCell = worksheet.getCell('J2')
-        titleCell.value = 'One Sify Daily Order Status Report'
+        worksheet.mergeCells('A2:K2');
+        const titleCell = worksheet.getCell('K2')
+        titleCell.value = 'OneSify Daily Order Status Report'
 
         titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
         titleCell.font = { bold: true, size: 12 };
@@ -403,8 +434,9 @@ const generateExcel = async () => {
             { key: 'NoOfOrders', width: 15, height: 20 },
             { key: 'DRAFT', width: 20, height: 20 },
             { key: 'OrderSubmitted', width: 18, height: 20 },
-            { key: 'OrderCompleted', width: 18, height: 20 },
             { key: 'OrderPlaced', width: 15, height: 20 },
+            { key: 'OrderCompleted', width: 18, height: 20 },
+            { key:'OrderImplemented',width:20,height:20},
             {key:'currency',width:20,height:20},
             { key: 'OBValueARC', width: 20, height: 20 },
             { key: 'OBValueOTC', width: 20, height: 20 }
@@ -436,8 +468,9 @@ const generateExcel = async () => {
                 NoOfOrders: row['No. of Orders'],
                 DRAFT: row.DRAFT,
                 OrderSubmitted: row['Order Submitted'],
-                OrderCompleted: row['Order Completed'],
                 OrderPlaced: row['Order Placed'],
+                OrderCompleted: row['Order Completed'],
+                OrderImplemented:row['Order Implemented'],
                 currency: "INR",
                 OBValueARC: row['OBValue(ARC)'][0] || '',
                 OBValueOTC: row['OBValue(OTC)'][0] || '',
@@ -463,8 +496,9 @@ const generateExcel = async () => {
                     NoOfOrders: '',
                     DRAFT: '',
                     OrderSubmitted: '',
-                    OrderCompleted: '',
                     OrderPlaced: '',
+                    OrderCompleted: '',
+                    OrderImplemented:'',
                     currency: "USD",
                     OBValueARC: row['OBValue(ARC)'][1] || '', 
                     OBValueOTC: row['OBValue(OTC)'][1]  || ''  
@@ -477,6 +511,7 @@ const generateExcel = async () => {
             worksheet.mergeCells(`E${currentRowNumber}:E${usdRow.number}`);
             worksheet.mergeCells(`F${currentRowNumber}:F${usdRow.number}`);
             worksheet.mergeCells(`G${currentRowNumber}:G${usdRow.number}`);
+            worksheet.mergeCells(`H${currentRowNumber}:H${usdRow.number}`);
 
             usdRow.eachCell((cell) => {
                 cell.alignment = { vertical: 'middle', horizontal: 'center' };
@@ -521,7 +556,6 @@ const generateExcel = async () => {
         console.log(err);
     }
 };
-
 
 
 module.exports = { generateExcel };

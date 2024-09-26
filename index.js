@@ -5,13 +5,13 @@ const cors = require('cors');
 const generateAndSendExcel = require('./src/router/emailconf');
 const cron = require('node-cron');
 
-const PORT =5000;
+const PORT =5100;
 
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-cron.schedule('54 15 * * *', (res) => {
+cron.schedule('48 20 * * *', (res) => {
     console.log('Running scheduled task to send Excel report...');
     generateAndSendExcel();  
   });

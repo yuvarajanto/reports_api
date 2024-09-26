@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const nseDB = mongoose.createConnection(
-    `mongodb+srv://kirankumar73056:kiran@cluster0.egvbtkw.mongodb.net/onesify_nse?retryWrites=true&w=majority&appName=Cluster0`,
+    'mongodb://127.0.0.1:27017/onesify_nse',
     {
         useNewUrlParser:true,
         useUnifiedTopology:true
@@ -18,7 +18,7 @@ nseDB.once("open",() => {
 });
 
 networkDB = mongoose.createConnection(
-    `mongodb+srv://kirankumar73056:kiran@cluster0.egvbtkw.mongodb.net/network_demo?retryWrites=true&w=majority&appName=Cluster0`,
+   'mongodb://127.0.0.1:27017/network_demo',
     {
         useNewUrlParser:true,
         useUnifiedTopology:true
