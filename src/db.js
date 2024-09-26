@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
-const nseDB =mongoose.connect('mongodb://223.30.223.188:27017/onesify_nse', {
+const nseDB =mongoose.createConnection('mongodb://223.30.223.188:27017/onesify_nse', 
+  {
     auth: {
         username:'appusr',
         password:'AppPass123'
@@ -20,7 +21,8 @@ nseDB.once("open",() => {
     console.info("NSE_DB Connected");
 });
 
-networkDB = mongoose.connect('mongodb://223.30.223.188:27017/network', {
+networkDB = mongoose.createConnection('mongodb://223.30.223.188:27017/network', 
+  {
     auth: {
         username:'appusr',
         password:'AppPass123'
