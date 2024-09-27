@@ -30,7 +30,7 @@ function excelData(data, product) {
             "Order Completed": counts["Order Completed"],
             "Order Implemented": counts["Order Implemented"],
             "OBValue(ARC)": [ (item.obvalueArc || item.obvalueArcINR ) , item.obvalueArcUSD ],
-            "OBValue(OTC)": [(item.obvalueOtc || item.obvalueArcINR ), item.obvalueOtcUSD]
+            "OBValue(OTC)": [(item.obvalueOtc || item.obvalueOtcINR ), item.obvalueOtcUSD]
             // "OBCValu(OTC)"
         };
     });

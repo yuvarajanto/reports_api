@@ -13,7 +13,7 @@ const sendEmailWithAttachment = async (excelBuffer) => {
   
     const mailOptions = {
       from: 'onesify@sifycorp.com', 
-      to: ['kiran.sudharsan@sifycorp.com','vaishnavi.srinivasan@sifycorp.com','yuvaraj.subramanian@sifycorp.com','dinesh.dhanapalan@sifycorp.com','sugavanesh.mayavel@sifycorp.com','murali.janakiraman@sifycorp.com'],  
+      to: ['kiran.sudharsan@sifycorp.com','vaishnavi.srinivasan@sifycorp.com'],  
       subject: 'Report - Order Summary',   
       html:`
       <p>Please find the attached Excel report.</p>
