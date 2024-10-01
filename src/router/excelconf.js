@@ -159,8 +159,8 @@ const generateExcel = async () => {
                 },
                 {
                     $match: {
-                        year: currentYear,
-                        quarter: currentQuarter
+                        year: quoteYear,
+                        quarter: quoteQuarter
                     }
                 },
                 {
