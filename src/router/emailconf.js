@@ -10,16 +10,37 @@ const sendEmailWithAttachment = async (excelBuffer) => {
     secureConnection: false,
     tls: { ciphers: 'SSLv3' }
 });
-  
+  if(excelBuffer.length === 0){
+    const mailOptions = {
+      from: 'onesify@sifycorp.com', 
+      to: ['kiran.sudharsan@sifycorp.com','vaishnavi.srinivasan@sifycorp.com'],  
+      subject: 'Report - Order Summary',   
+      html:`
+      <p>As of yesterday, there were no orders placed in the current quarter.</p>
+      <p>Best regards,</p><p>Team OneSify</p>
+    <div style="margin-top: 20px;">
+    <p>Sify Technologies</p>
+    <p><strong>Headquarters</strong></br>II floor, Tidel Park,</br>
+    No.4, Rajiv Gandhi Salai, Taramani,</br>
+    Chennai - 600 113, India </p>`
+  }
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('Email sent successfully!');
+  } catch (error) {
+    console.error('Error sending email:', error);
+  }
+}else{
     const mailOptions = {
       from: 'onesify@sifycorp.com', 
       to: ['kiran.sudharsan@sifycorp.com','vaishnavi.srinivasan@sifycorp.com'],  
       subject: 'Report - Order Summary',   
       html:`
       <p>Please find the attached Excel report.</p>
-      <p>Best regards,</p><p>Team OneSify</p>
+      <p>Best regards,</br>Team OneSify</p>
     <div style="margin-top: 20px;">
-    <p><strong>Headquarters</strong></br>II floor, Tidel Park,</br>
+    <p>Sify Technologies</br>
+    <strong>Headquarters</strong></br>II floor, Tidel Park,</br>
     No.4, Rajiv Gandhi Salai, Taramani,</br>
     Chennai - 600 113, India </p>`,  
       attachments: [
@@ -30,13 +51,14 @@ const sendEmailWithAttachment = async (excelBuffer) => {
         }
       ]
     };
-  
     try {
       await transporter.sendMail(mailOptions);
       console.log('Email sent successfully!');
     } catch (error) {
       console.error('Error sending email:', error);
     }
+  } 
+    
   };
 
   const generateAndSendExcel = async () => {

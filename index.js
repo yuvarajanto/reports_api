@@ -11,7 +11,7 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-cron.schedule('03 12 * * *', (res) => {
+cron.schedule('01 13 * * *', (res) => {
     console.log('Running scheduled task to send Excel report...');
     generateAndSendExcel();  
   });
