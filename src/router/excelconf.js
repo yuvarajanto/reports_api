@@ -39,17 +39,28 @@ function excelData(data, product) {
 
 const generateExcel = async () => {
     try {
-        console.log(new Date());
+        console.log("Start Time:",new Date());
         const currentDate = new Date();
         const updatedDate = new Date(currentDate.getTime() + (5 * 60 * 60 * 1000) + (30 * 60 * 1000));
-        const currentYear = currentDate.getFullYear();
-        const currentMonth = currentDate.getMonth() + 1;
-        const currentQuarter = Math.ceil(currentMonth / 3);
 
         const quoteYear = updatedDate.getFullYear();
-        const quoteMonth = updatedDate.getMonth();
+        const quoteMonth = updatedDate.getMonth() + 1;
+        const quoteDay = updatedDate.getDate();
         const quoteQuarter = Math.ceil(quoteMonth / 3);
-       
+        console.log("ee",quoteYear,quoteMonth,quoteDay,quoteQuarter);
+        let queryYear, queryQuarter;
+        if (quoteDay === 1) {
+            if (quoteQuarter === 1) {
+                queryQuarter = 4;
+                queryYear = quoteYear - 1; 
+            } else {
+                queryQuarter = quoteQuarter - 1;
+                queryYear = quoteYear; 
+            }
+        } else {
+            queryQuarter = quoteQuarter;
+            queryYear = quoteYear;
+        }
         const quoteData = await quote.aggregate([
             {
 
@@ -82,8 +93,8 @@ const generateExcel = async () => {
             {
                 // Stage 2: Match documents for the current year and quarter
                 $match: {
-                    year: quoteYear,
-                    quarter: quoteQuarter
+                    year: queryYear,
+                    quarter: queryQuarter
                 }
             },
             {
@@ -159,8 +170,8 @@ const generateExcel = async () => {
                 },
                 {
                     $match: {
-                        year: quoteYear,
-                        quarter: quoteQuarter
+                        year: queryYear,
+                        quarter: queryQuarter
                     }
                 },
                 {
@@ -327,8 +338,8 @@ const generateExcel = async () => {
             },
             {
                 $match: {
-                    year: quoteYear,
-                    quarter: quoteQuarter
+                    year: queryYear,
+                    quarter: queryQuarter
                 }
             },
             {
@@ -383,7 +394,10 @@ const generateExcel = async () => {
         const quoteccExcel = excelData(quoteccData, "CrossConnect");
         //console.log(JSON.stringify(quoteccData, null, 2));
         const combinedData = [...quoteExcel, ...newquoteExcel, ...quoteccExcel];
-        //combinedData.sort((a, b) => new Date(b.Date) - new Date(a.Date));
+        if(combinedData.length === 0){
+            console.log("No orders Placed!")
+            return combinedData
+        }
         combinedData.sort((a, b) => {
             const [dayA, monthA, yearA] = a.Date.split('-');
             const [dayB, monthB, yearB] = b.Date.split('-');
@@ -392,27 +406,27 @@ const generateExcel = async () => {
           
             return dateB - dateA;
           });
-        let startDate;
-        switch(quoteQuarter){
-            case 1:
-                startDate = "01"+" Jan "+currentYear
-                break
-            case 2:
-                startDate = "01"+" Apr "+currentYear
-                break
-            case 3:
-                startDate = "01"+ " Jul "+currentYear
-                break
-            case 4:
-                startDate = "01"+" Oct "+currentYear
-                break
-        }
+          let startDate;
+          switch(queryQuarter){
+              case 1:
+                  startDate = "01"+" Jan "+quoteYear
+                  break
+              case 2:
+                  startDate = "01"+" Apr "+quoteYear
+                  break
+              case 3:
+                  startDate = "01"+ " Jul "+quoteYear
+                  break
+              case 4:
+                  startDate = "01"+" Oct "+quoteYear
+                  break
+          }
         //console.log(JSON.stringify(combinedData,null,2));
-         const prevDay= new Date(currentDate);
-         prevDay.setDate(currentDate.getDate()-1);
+         const prevDay= new Date(updatedDate);
+         prevDay.setDate(updatedDate.getDate()-1);
          currdate =  (prevDay.toDateString().split(' '))[2]+" "+(prevDay.toDateString().split(' '))[1] +" "+(prevDay.toDateString().split(' '))[3]
          const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet('Summary');
+         const worksheet = workbook.addWorksheet('Summary');
 
         worksheet.addRow(['', '', '']);
 
@@ -549,7 +563,7 @@ const generateExcel = async () => {
             }
         ]
         const buffer = await workbook.xlsx.writeBuffer();
-        console.log(new Date());
+        console.log("End Time: ",new Date());
         return buffer;
 
     } catch (err) {
