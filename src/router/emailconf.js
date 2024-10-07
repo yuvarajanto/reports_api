@@ -31,6 +31,11 @@ const sendEmailWithAttachment = async (excelBuffer) => {
     console.error('Error sending email:', error);
   }
 }else{
+  const currDate = new Date();
+  const month = currDate.getMonth()+1;
+  const queryQuarter = getQuarter(month);
+  console.log(formatDateAsDDMMYY(currDate));
+  const today = formatDateAsDDMMYY(currDate);
     const mailOptions = {
       from: 'onesify@sifycorp.com', 
       to: ['kiran.sudharsan@sifycorp.com','vaishnavi.srinivasan@sifycorp.com'],  
@@ -45,7 +50,7 @@ const sendEmailWithAttachment = async (excelBuffer) => {
     Chennai - 600 113, India </p>`,  
       attachments: [
         {
-          filename: 'report.xlsx',  
+          filename: `OSP-OB-${queryQuarter}-${today}.xlsx`,  
           content: excelBuffer,  
           contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'  
         }
@@ -69,5 +74,14 @@ const sendEmailWithAttachment = async (excelBuffer) => {
       console.error('Error generating or sending Excel file:', error);
     }
   };
+
+  const formatDateAsDDMMYY = (date) => {
+    const day = String(date.getDate()).padStart(2, '0'); 
+    const month = String(date.getMonth() + 1).padStart(2, '0'); 
+    const year = String(date.getFullYear()).slice(-2); 
+    return `${day}${month}${year}`; 
+  };
+
+  const getQuarter = (month) => {    if (month >= 1 && month <= 3) return 'Q4';    if (month >= 4 && month <= 6) return 'Q1';    if (month >= 7 && month <= 9) return 'Q2';    return 'Q3';}; 
 
   module.exports = generateAndSendExcel;
